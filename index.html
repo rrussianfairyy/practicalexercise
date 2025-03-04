@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practical Exercise</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.5.0/p5.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            text-align: left;
+        }
+
+        header {
+            background-color: #396ec4;
+            color: #ffffff;
+            text-align: left;
+            top: 0;
+            padding: 30px 30px;
+            position: sticky;
+
+  
+  
+  color: #f1f1f1;
+            
+        }
+
+        header h1 {
+            font-size: 22px;
+            font-family: Arial, Helvetica, sans-serif;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .container {
+            flex: 1;
+            width: 90%;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .section h2 {
+            font-size: 60px;
+            color: #396ec4;
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+
+        #p5-container {
+            display: block;
+            margin-left: 20px;
+            margin-bottom: 20px;
+            width: 100%; /* Ensures the canvas is full width */
+        }
+
+        footer {
+            background-color: #396ec4;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            margin-top: auto;
+        }
+
+        #chosen-artist img {
+            width: 30%; /* Smaller size for the image */
+            height: auto;
+            display: block;
+            margin-left: 20px; /* Align image to the left */
+            margin-bottom: 20px;
+        }
+
+        #process h2 {
+            font-size: 60px; /* Match with CHOSEN ARTIST h2 */
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        #chosen-artist h3, #chosen-artist h1 {
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        #chosen-artist h1 {
+            font-size: 24px;
+        }
+
+        /* Matching MY PROCESS h1 to CHOSEN ARTIST h1 */
+        #process h1 {
+            font-size: 24px; /* Match with CHOSEN ARTIST h1 */
+            text-align: left;
+            padding-left: 20px;
+            font-family: Arial, Helvetica, sans-serif;
+            letter-spacing: 2px;
+            text-transform: lowercase;
+            margin: 0;
+        }
+
+        #process p {
+            font-size: 18px; /* Match Tyler Hobbs' description text size */
+            line-height: 1.6;
+            padding-left: 20px;
+        }
+
+        /* Image container styling */
+        .image-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            margin: 20px
+        }
+
+        .image-container img {
+            width: 45%;
+            height: auto;
+        }
+    
+        /* Image container styling */
+        .image-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        /* Adjusting image size for multiple images */
+        .image-container img {
+            width: 40%;  /* Make images smaller */
+            height: auto;
+            object-fit: contain; /* Prevent images from stretching or squeezing */
+        }
+
+        /* Styling for single image containers, left aligned */
+        .single-image-container {
+            margin-left: 20px;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .single-image-container img {
+            width: 50%;  /* Adjust size for single images */
+            height: auto;
+            object-fit: contain;
+    
+        }
+
+        #reflection p {
+            font-size: 18px; /* Match Tyler Hobbs' description text size */
+            line-height: 1.6;
+            padding-left: 20px;
+
+        }
+            
+            
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Practical Exercise</h1>
+    </header>
+
+    <section id="chosen-artist" class="section">
+        <h2>CHOSEN ARTIST</h2>
+        <h1>Tyler Hobbs</h1>
+        <h1>Source Code: Unavailable</h1>
+        <h3>"Return Zero [Blue]" is a generative art series by Tyler Hobbs, featuring algorithmically created flowing patterns in blue hues. Each piece is unique, printed on high-quality paper, and explores the balance between computational precision and artistic expression.</h3>
+        <a href="https://www.tylerxhobbs.com/works/return-zero-blue" target="_blank">
+            <img src="https://i.seadn.io/gae/6qNnhyl2JEoy-gi75kVm74dPU4Ae-JbMq4cT9ECleSS-es_dPd3tZY_lTdHj04FXrx_A2ZGeEeUGkcOUkxcJglcM-4tqzjaZmmk_?auto=format&dpr=1&w=1400&fr=1" alt="Return Zero">
+        </a>
+    </section>
+
+    <section id="my-version" class="section">
+        <h2>MY VERSION</h2>
+        <div id="p5-container"></div> <!-- The p5.js canvas container -->
+        <script>
+            let cols, rows;
+            let resolution = 20;
+            let flowfield = [];
+            let time = 0;
+            let perlinNoiseScale = 0.09; // Scale for Perlin noise
+            let maxLineLength = 3; // Maximum line length for flowfield vectors
+          
+            function setup() {
+                createCanvas(900, 900).parent('#p5-container');
+                cols = floor(width / resolution);
+                rows = floor(height / resolution);
+                flowfield = new Array(cols * rows);
+                background(245, 240, 220); // Off-white background
+            }
+          
+            function draw() {
+                background(245, 240, 220, 90); // Transparent background for motion blur effect
+                let index = 0;
+                let mouseVec = createVector(mouseX, mouseY);
+
+                for (let y = 0; y < rows; y++) {
+                    for (let x = 0; x < cols; x++) {
+                        let xPos = (x * resolution) % width;
+                        let yPos = (y * resolution) % height;
+                        let angleToMouse = atan2(mouseVec.y - yPos, mouseVec.x - xPos);
+                        let angle = angleToMouse + noise(x * perlinNoiseScale, y * perlinNoiseScale, time) * TWO_PI;
+
+                        flowfield[index] = createVector(cos(angle), sin(angle));
+                        let v = flowfield[index];
+
+                        let r = map(sin(time + mouseX * 0.01), -1, 1, 50, 255);
+                        let g = map(cos(time + mouseY * 0.01), -1, 1, 50, 255);
+                        let b = map(sin(time * 0.3 + mouseX * 0.005), -1, 1, 50, 255);
+
+                        stroke(r, g, b); // Dynamic color change
+
+                        push();
+                        translate(xPos, yPos);
+                        line(1, 2, v.x * resolution * maxLineLength, v.y * resolution * maxLineLength);
+                        pop();
+
+                        index++;
+                    }
+                }
+                time += 0.003; // Slow update for fluid movement
+            }
+        </script>
+    </section>
+
+    <section id="process" class="section">
+        <h2>MY PROCESS</h2>
+        <br>
+        <br>
+
+        
+        <h1>step 1: Getting Started</h1>
+        <p>I began by checking out Tyler's artwork, which was super dynamic and fluid—just what I liked. So, I figured I’d try recreating a simpler version of it in p5.js with some help from AI. At first, I asked for fluid lines that were interactive, but of course, that was a terrible prompt and didn’t get me anywhere. It felt like I was stuck.</p>
+        <br>
+        <div class="image-container">
+            <img src="https://artynft.io/wp-content/uploads/2021/07/Vorschaubild_Tyler_Hobbs-1.jpg" alt="Step 1 - Getting Started 1">
+            <img src="https://i.pinimg.com/736x/37/91/53/379153e2ad7de762fc57303b84e1e3c8.jpg" alt="Step 1 - Getting Started 2">
+        </div>
+        <br>
+        <h1>step 2: Finding Inspiration</h1>
+        <p>Feeling stuck, I turned to YouTube for some help. I watched a bunch of tutorials on how to make digital artwork similar to "return zero." And every video mentioned these two terms over and over: Perlin noise and flow field. The more I looked into them, the more I realized this was exactly what I needed.</p>
+        <br>
+        <div class="image-container">
+            <img src="https://i.pinimg.com/736x/da/5a/09/da5a09f84ab8173894c39319c7323c9b.jpg" alt="Step 2 - Finding Inspiration 1">
+            <img src="https://i.pinimg.com/736x/4d/5e/4c/4d5e4cefb0b3af533503c4c36ba3a92e.jpg" alt="Step 2 - Finding Inspiration 2">
+        </div>
+        <br>
+        <h1>STEP 3: Getting the Concepts Down</h1>
+        <p>So, I dug deeper into these terms. Perlin noise seemed perfect for creating that smooth, random transition I was looking for, and the flow field was how I could make fluid, vector-based lines that would interact with the environment. I went back to AI with this new knowledge and asked for a flow field: a grid of vectors that look like lines on the screen, all with a flow direction. Perlin noise would smooth everything out and give it that fluid vibe I wanted.</p>
+        <br>
+        <div class="single-image-container">
+            <img src="https://i.pinimg.com/736x/98/3b/77/983b77ecb90edf494d4da777a3cce944.jpg" alt="Step 3 - Getting the Concepts Down 1">
+        </div>
+        <br>
+        <h1>step 4: Struggling with Code</h1>
+        <p>The AI generated a template, but honestly, the code was kind of confusing at first. I spent a while trying to figure out how it all worked, adjusting things like the vector thickness and how fast the flow moved. It took a bit of time, but I eventually got the hang of it.</p>
+        <br>
+        <div class="image-container">
+            <img src="https://i.pinimg.com/474x/51/5a/b3/515ab35f12e64981ab2b82354e4ee0c3.jpg" alt="Step 4 - Struggling with Code 2">
+        </div>
+        <br>
+        <h1>step 5: Making It Interactive</h1>
+        <p>Once I understood the code, I wanted to make it interactive. I asked AI to make the flow field react to the cursor’s movement. When I moved the cursor, the flow field would shift and move away from it, which was actually pretty cool. The interactivity was starting to come together!</p>
+        <br>
+        <div class="image-container">
+            <img src="https://i.pinimg.com/736x/20/b9/9e/20b99ec0d262d2ecb58340395762b947.jpg" alt="Step 5 - Making It Interactive 2">
+        </div>
+        <br>
+        <h1>step 6: Adding Some Flavor</h1>
+        <p>But even with the interaction, it still felt kind of dull. So, I played around with different elements—color, size, speed—trying to get it to look just right. But something was still missing.</p>
+        <br>
+        <div class="image-container">
+            <img src="https://i.pinimg.com/736x/59/f3/4f/59f34f415ba2d394b075c4890e8c123b.jpg" alt="Step 6 - Adding Some Flavor">
+            <img src="https://i.pinimg.com/736x/cc/6e/1a/cc6e1aeb6586a165062d166a318ff91f.jpg" alt="Step 6 - Adding Some Flavor">
+        </div>
+        <br>
+
+        <h1>step 7: The Final Touch</h1>
+        <p>Then, I had a thought: why not make the flow field change colors as the cursor moves and make the vectors longer? So, I added that in, and bam—everything just clicked. The artwork finally had the dynamic, vibrant feel I was going for.</p>
+        <div class="image-container">
+            <img src="https://i.pinimg.com/736x/50/83/71/5083717611132420b1c82f866fd49167.jpg" alt="Step 6 - Adding Some Flavor">
+            <img src="https://i.pinimg.com/474x/3d/39/f3/3d39f3f6ef70f2ede834453bb43cca7b.jpg" alt="Step 6 - Adding Some Flavor">
+        </div>
+    </section>
+    <section id="reflection" class="section">
+        <h2>REFLECTION ON ARTIST'S INFLUENCE</h2>
+        <p>Tyler Hobbs has made a significant impact on the art world, seamlessly combining traditional aesthetics with algorithmic processing. His generative art explores the intersection of structured computational rules and organic, painterly forms, influencing both digital artists and the broader creative coding community.
+
+            Hobbs’ use of flow fields and algorithmic brushstrokes has inspired many generative artists to experiment with these techniques in their own work. His signature style—blending geometric precision with fluidity—has contributed to a growing appreciation for computational aesthetics in both the traditional art world and the NFT space. The success of projects like Fidenza has demonstrated that generative art can be both conceptually rich and commercially viable, opening doors for more artists to explore code-based creation.
+            
+            His work challenges the notion that digital art is purely mechanical, instead highlighting its potential for depth, nuance, and emotional resonance. By bridging technical precision with artistic intuition, Hobbs has played a crucial role in legitimizing generative art as a serious artistic practice. His influence continues to shape how we perceive the creative potential of algorithms and the evolving relationship between technology and artistic expression.</p>
+    </section>
+    <br>
+    <br>
+    <br>
+     
+
+    <footer>
+     interaction design 2025 
+    </footer>
+</body>
+</html>
